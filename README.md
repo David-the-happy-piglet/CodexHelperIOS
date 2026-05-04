@@ -2,20 +2,6 @@
 
 Codex Companion for iPhone is a native iOS supervision app for desktop Codex workflows. It is intentionally not a mobile IDE. The iPhone stays focused on progress tracking, approvals, artifact previews, and lightweight control while heavy coding, large diffs, and deep review remain on the desktop where context density and tooling are stronger.
 
-## Product Positioning
-
-- Mobile is for supervision: thread visibility, approvals, compact previews, and “what is Codex doing right now?”
-- Desktop remains the execution surface: Codex edits files locally on the computer and keeps full repository access there.
-- Deep review stays on desktop: the phone exposes a clear “Review on Desktop” handoff instead of pretending a phone can replace a serious diff workflow.
-- The Desktop Helper is the bridge: the phone never speaks directly to raw local Codex internals.
-
-## Why The Phone Is Intentionally Limited
-
-- Code review ergonomics: serious review needs full diffs, multi-file context, and desktop-scale navigation.
-- Security boundaries: the app supervises through a secure helper instead of exposing internal local transports to mobile clients.
-- Reliability: compact state, summaries, and approvals are more resilient on a constrained mobile network than shipping raw terminal or IDE state.
-- Product clarity: supervision is faster and safer than overreaching into a “mini IDE” that would still be worse than desktop.
-
 ## Architecture
 
 ### Text Diagram
@@ -160,27 +146,6 @@ This keeps the mobile-facing API stable while allowing the local Codex integrati
 - APNs registration hook for future remote relay support
 - Live Activity support for one selected active thread
 
-## Demo Mode
-
-Demo mode is the default helper mode and works without a live Codex bridge.
-
-- start the helper
-- pair the iPhone app against the helper URL
-- watch mock threads update over time
-- resolve mock approvals
-- test lightweight commands and desktop handoff flows
-
-Use App Server mode for the production-style Codex integration:
-
-```bash
-CODEX_HELPER_MODE=app-server npm run dev --workspace @codex-companion/desktop-helper
-```
-
-Use filesystem mode for a more realistic local bridge boundary:
-
-```bash
-CODEX_HELPER_MODE=filesystem CODEX_BRIDGE_PATH=./desktop-helper/local-bridge npm run dev --workspace @codex-companion/desktop-helper
-```
 
 ## Build And Run
 
