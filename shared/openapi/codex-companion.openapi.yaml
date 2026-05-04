@@ -1,0 +1,399 @@
+openapi: 3.1.0
+info:
+  title: Codex Companion Mobile Supervision API
+  version: 1.0.0
+  description: >
+    Secure mobile-facing API served by the Desktop Helper. The local Codex transport
+    remains behind an internal bridge boundary and is never exposed directly to the iPhone app.
+servers:
+  - url: https://desktop-helper.local:9443
+paths:
+  /health:
+    get:
+      summary: Helper health snapshot
+      responses:
+        "200":
+          description: Helper health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionHealth"
+  /pairing/code:
+    post:
+      summary: Create a short-lived pairing code for a new device
+      responses:
+        "200":
+          description: Pairing code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PairingCode"
+  /pairing/exchange:
+    post:
+      summary: Exchange a pairing code for access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PairingExchangeRequest"
+      responses:
+        "200":
+          description: Session established
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PairingExchangeResponse"
+  /auth/refresh:
+    post:
+      summary: Refresh an expired access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        "200":
+          description: Refreshed access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokens"
+  /auth/logout:
+    post:
+      summary: Revoke the current refresh session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        "204":
+          description: Logged out
+  /devices:
+    get:
+      summary: List trusted paired devices
+      responses:
+        "200":
+          description: Trusted devices
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceListResponse"
+  /devices/{id}/revoke:
+    post:
+      summary: Revoke a paired device
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked device
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionDevice"
+  /threads:
+    get:
+      summary: List active and recent Codex threads
+      responses:
+        "200":
+          description: Thread summaries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListThreadsResponse"
+  /threads/{id}:
+    get:
+      summary: Get thread detail and timeline
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thread detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadDetail"
+  /threads/{id}/preview:
+    get:
+      summary: Fetch the latest compact artifact preview
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Artifact preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactPreview"
+  /threads/{id}/command:
+    post:
+      summary: Dispatch a lightweight command to a running thread
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreadCommandRequest"
+      responses:
+        "202":
+          description: Command accepted
+  /threads/{id}/approval:
+    post:
+      summary: Resolve a low-risk approval request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalResolutionRequest"
+      responses:
+        "200":
+          description: Updated approval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalRequest"
+  /events:
+    get:
+      summary: WebSocket endpoint for thread and task events
+      responses:
+        "101":
+          description: Switching protocols to WebSocket
+components:
+  schemas:
+    ThreadStatus:
+      type: string
+      enum: [running, waiting, blocked, error, done, paused]
+    Severity:
+      type: string
+      enum: [info, warning, error, success]
+    RiskLevel:
+      type: string
+      enum: [low, medium, high]
+    ApprovalStatus:
+      type: string
+      enum: [pending, approved, rejected, dismissed]
+    EventType:
+      type: string
+      enum:
+        - thread.created
+        - thread.updated
+        - task.phase_changed
+        - task.summary_updated
+        - artifact.generated
+        - approval.requested
+        - approval.resolved
+        - task.completed
+        - task.failed
+        - connection.health_changed
+    PreviewSummary:
+      type: object
+      required: [headline, changedFilesCount, testsPassed, testsFailed, needsDesktopReview]
+      properties:
+        headline: { type: string }
+        changedFilesCount: { type: integer }
+        testsPassed: { type: integer }
+        testsFailed: { type: integer }
+        needsDesktopReview: { type: boolean }
+    ThreadSummary:
+      type: object
+      required:
+        - id
+        - projectName
+        - branchOrWorktree
+        - title
+        - status
+        - startedAt
+        - updatedAt
+        - pendingApprovals
+        - elapsedSeconds
+        - previewSummary
+      properties:
+        id: { type: string }
+        projectName: { type: string }
+        branchOrWorktree: { type: string }
+        title: { type: string }
+        status: { $ref: "#/components/schemas/ThreadStatus" }
+        startedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        pendingApprovals: { type: integer }
+        elapsedSeconds: { type: integer }
+        previewSummary: { $ref: "#/components/schemas/PreviewSummary" }
+    ThreadEvent:
+      type: object
+      required: [id, threadID, type, timestamp, title, detail, severity]
+      properties:
+        id: { type: string }
+        threadID: { type: string }
+        type: { $ref: "#/components/schemas/EventType" }
+        timestamp: { type: string, format: date-time }
+        title: { type: string }
+        detail: { type: string }
+        severity: { $ref: "#/components/schemas/Severity" }
+    ApprovalRequest:
+      type: object
+      required: [id, threadID, title, rationale, riskLevel, createdAt, status]
+      properties:
+        id: { type: string }
+        threadID: { type: string }
+        title: { type: string }
+        rationale: { type: string }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        createdAt: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/ApprovalStatus" }
+    ArtifactPreview:
+      type: object
+      required:
+        - threadID
+        - changedFilesCount
+        - changedFileNames
+        - testsPassed
+        - testsFailed
+        - screenshotURLs
+        - summary
+        - needsDesktopReview
+      properties:
+        threadID: { type: string }
+        changedFilesCount: { type: integer }
+        changedFileNames:
+          type: array
+          items: { type: string }
+        testsPassed: { type: integer }
+        testsFailed: { type: integer }
+        screenshotURLs:
+          type: array
+          items: { type: string, format: uri }
+        summary: { type: string }
+        needsDesktopReview: { type: boolean }
+    ThreadDetail:
+      type: object
+      required: [thread, latestPlan, latestSummary, preview, events, approvals]
+      properties:
+        thread: { $ref: "#/components/schemas/ThreadSummary" }
+        latestPlan:
+          type: array
+          items: { type: string }
+        latestSummary: { type: string }
+        preview: { $ref: "#/components/schemas/ArtifactPreview" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/ThreadEvent" }
+        approvals:
+          type: array
+          items: { $ref: "#/components/schemas/ApprovalRequest" }
+        latestRawLog: { type: string }
+    ThreadCommandRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [continue, pause, replan, summarize, retry_failed_step, explain_blocker, review_on_desktop, custom]
+        note: { type: string }
+    ApprovalResolutionRequest:
+      type: object
+      required: [approvalID, action]
+      properties:
+        approvalID: { type: string }
+        action:
+          type: string
+          enum: [approve, reject, ask_summary]
+        note: { type: string }
+    PairingCode:
+      type: object
+      required: [code, expiresAt, helperURL, qrPayload]
+      properties:
+        code: { type: string }
+        expiresAt: { type: string, format: date-time }
+        helperURL: { type: string, format: uri }
+        qrPayload: { type: string }
+    PairingExchangeRequest:
+      type: object
+      required: [deviceName, pairingCode]
+      properties:
+        deviceName: { type: string }
+        pairingCode: { type: string }
+    SessionDevice:
+      type: object
+      required: [id, name, pairedAt, lastSeenAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        pairedAt: { type: string, format: date-time }
+        lastSeenAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time }
+    AuthTokens:
+      type: object
+      required: [accessToken, refreshToken, expiresAt]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+    PairingExchangeResponse:
+      type: object
+      required: [device, tokens]
+      properties:
+        device: { $ref: "#/components/schemas/SessionDevice" }
+        tokens: { $ref: "#/components/schemas/AuthTokens" }
+    DeviceListResponse:
+      type: object
+      required: [devices]
+      properties:
+        devices:
+          type: array
+          items: { $ref: "#/components/schemas/SessionDevice" }
+    ConnectionHealth:
+      type: object
+      required: [codexBridge, websocketClients, demoMode]
+      properties:
+        codexBridge:
+          type: string
+          enum: [healthy, degraded, disconnected]
+        websocketClients: { type: integer }
+        demoMode: { type: boolean }
+        lastBridgeSyncAt: { type: string, format: date-time }
+    ListThreadsResponse:
+      type: object
+      required: [threads, approvalsPending, runningTasks, health]
+      properties:
+        threads:
+          type: array
+          items: { $ref: "#/components/schemas/ThreadSummary" }
+        approvalsPending: { type: integer }
+        runningTasks: { type: integer }
+        health: { $ref: "#/components/schemas/ConnectionHealth" }

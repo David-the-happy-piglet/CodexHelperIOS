@@ -1,0 +1,56 @@
+name: CodexCompanion
+options:
+  createIntermediateGroups: true
+packages:
+  CodexCompanionShared:
+    path: ios/CodexCompanionShared
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+targets:
+  CodexCompanion:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: ios/CodexCompanion
+    resources:
+      - path: ios/CodexCompanion/Assets.xcassets
+      - path: ios/CodexCompanion/Resources
+    info:
+      path: ios/CodexCompanion/Supporting/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.codexcompanion.ios
+        PRODUCT_NAME: Codex Companion
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+    dependencies:
+      - package: CodexCompanionShared
+      - target: CodexCompanionWidget
+        embed: true
+    scheme:
+      gatherCoverageData: false
+  CodexCompanionWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: ios/CodexCompanionWidget
+    info:
+      path: ios/CodexCompanionWidget/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.codexcompanion.ios.widget
+        PRODUCT_NAME: Codex Companion Widget
+        SKIP_INSTALL: YES
+    dependencies:
+      - package: CodexCompanionShared
+schemes:
+  CodexCompanion:
+    build:
+      targets:
+        CodexCompanion: all
+        CodexCompanionWidget: all
+

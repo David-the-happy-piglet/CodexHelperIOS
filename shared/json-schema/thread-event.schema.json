@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThreadEvent",
+  "type": "object",
+  "required": ["id", "threadID", "type", "timestamp", "title", "detail", "severity"],
+  "properties": {
+    "id": { "type": "string" },
+    "threadID": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "thread.created",
+        "thread.updated",
+        "task.phase_changed",
+        "task.summary_updated",
+        "artifact.generated",
+        "approval.requested",
+        "approval.resolved",
+        "task.completed",
+        "task.failed",
+        "connection.health_changed"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "title": { "type": "string" },
+    "detail": { "type": "string" },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "success"]
+    }
+  }
+}
+

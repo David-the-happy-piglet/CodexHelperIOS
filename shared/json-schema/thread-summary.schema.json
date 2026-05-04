@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThreadSummary",
+  "type": "object",
+  "required": [
+    "id",
+    "projectName",
+    "branchOrWorktree",
+    "title",
+    "status",
+    "startedAt",
+    "updatedAt",
+    "pendingApprovals",
+    "elapsedSeconds",
+    "previewSummary"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "projectName": { "type": "string" },
+    "branchOrWorktree": { "type": "string" },
+    "title": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["running", "waiting", "blocked", "error", "done", "paused"]
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "pendingApprovals": { "type": "integer", "minimum": 0 },
+    "elapsedSeconds": { "type": "integer", "minimum": 0 },
+    "previewSummary": {
+      "type": "object",
+      "required": ["headline", "changedFilesCount", "testsPassed", "testsFailed", "needsDesktopReview"],
+      "properties": {
+        "headline": { "type": "string" },
+        "changedFilesCount": { "type": "integer", "minimum": 0 },
+        "testsPassed": { "type": "integer", "minimum": 0 },
+        "testsFailed": { "type": "integer", "minimum": 0 },
+        "needsDesktopReview": { "type": "boolean" }
+      }
+    }
+  }
+}
+

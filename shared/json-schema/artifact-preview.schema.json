@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArtifactPreview",
+  "type": "object",
+  "required": [
+    "threadID",
+    "changedFilesCount",
+    "changedFileNames",
+    "testsPassed",
+    "testsFailed",
+    "screenshotURLs",
+    "summary",
+    "needsDesktopReview"
+  ],
+  "properties": {
+    "threadID": { "type": "string" },
+    "changedFilesCount": { "type": "integer", "minimum": 0 },
+    "changedFileNames": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "testsPassed": { "type": "integer", "minimum": 0 },
+    "testsFailed": { "type": "integer", "minimum": 0 },
+    "screenshotURLs": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "summary": { "type": "string" },
+    "needsDesktopReview": { "type": "boolean" }
+  }
+}

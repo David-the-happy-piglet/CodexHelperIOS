@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApprovalRequest",
+  "type": "object",
+  "required": ["id", "threadID", "title", "rationale", "riskLevel", "createdAt", "status"],
+  "properties": {
+    "id": { "type": "string" },
+    "threadID": { "type": "string" },
+    "title": { "type": "string" },
+    "rationale": { "type": "string" },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "dismissed"]
+    }
+  }
+}
+

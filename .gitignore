@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+dist
+coverage
+.build
+DerivedData
+*.xcworkspace/xcuserdata
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcuserstate
+desktop-helper/data
+
